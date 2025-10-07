@@ -6,8 +6,10 @@
 ## 주요 키워드
 > Servlet, JSP, Scope, Scriptlet, directive, 
 
+
 ---
 
+   
 ## 🔁 Servlet → JSP → MVC
 
 | 구분 | 설명 |
@@ -18,6 +20,7 @@
 
 ---
 
+
 ## ⚙️ Servlet vs JSP
 
 | 구분 | Servlet | JSP |
@@ -25,7 +28,7 @@
 | **실행 과정** | `.class` 파일을 웹 컨테이너가 직접 실행 | 최초 요청 시 Servlet 코드로 변환 → 컴파일 → 실행 (이후 요청 시 컴파일된 Servlet 재사용) |
 | **개발 생산성** | 자바 코드 내 HTML 포함 → **UI 개발 복잡** | HTML 기반 + 자바 코드 삽입 → **UI 개발 용이** |
 
----
+
 
 ## 🧩 JSP (Java Server Pages)
 
