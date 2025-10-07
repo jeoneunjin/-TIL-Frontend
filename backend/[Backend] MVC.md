@@ -3,7 +3,6 @@
 ## 🎯 학습 목표
 서블릿과 JSP의 한계점을 이해하고, 이를 해결하기 위한 **MVC(Model-View-Controller)** 패턴의 필요성과 구조를 학습한다.
 
----
 
 ## 💡 주요 키워드
 - Model  
@@ -173,8 +172,26 @@ POST → (서버 처리)
      → GET (새 URL)
 ```
 
----
+### MVC 실습
+```jsp
+<%-- 메시지 자체에 ""가 포함 되기도 하기 떄문에, 아무것도 작성하지 않고 button을 눌렀을 때 ``이 없으면 정상 작동 안 한다. ``을 이용해서 묶어주자 --%>
+<script>
+    let alertMsg = `<%=request.getAttribute("alertMsg")%>`
+    if(alertMsg){
+        alert(alertMsg)
+    }
+</script>
 
+```
+#### **❓ 회원 가입을 위한 DAO, load()와 save()는 언체 호출하는게 좋을까**  
+> ➡️ Application의 life cycle이 시작될 때 load()를 호출, life cycle이 끝날 때 save() 호출 
+
+#### **❓ 회원가입 후 응답으로 forward가 맞을까 redirect가 맞을까**  
+> ➡️ ***POST →  GET 전환(PRG 패턴)***
+> 브라우저 새로고침 시 회원가입 폼 중복 제출(POST)이 발생하지 않으려면 redirect를 통해 새 GET 요청을 보내야 한다. 
+
+
+---
 
 ### 🌐 301 vs 302 리디렉션
 
