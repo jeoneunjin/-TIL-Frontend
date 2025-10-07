@@ -1,82 +1,87 @@
 # 🗓️ EL & JSTL 학습 내용 정리
 
 ## 🎯 학습 목표
-
-
-## 💡 주요 키워드
--
+- JSP에서 **EL(Expression Language)**과 **JSTL(JavaServer Pages Standard Tag Library)**를 활용하여 코드를 간결하고 직관적으로 작성  
+- HTML과 JSP의 로직 분리, 프로그래밍 요소를 최소화  
 
 ---
 
-## EL(Expression Language) & JSTL(JavaServer Pages Standard Tag Library)
-> ***EL***: ${}로 JSP에서 데이터 표현 간편화
-> ***JSTL***: 반복·조건·포맷 등 공통 기능을 태그로 제공하는 표준 라이브러리
-> JSP에서 최대한 프로그래밍 요소를 제거(태그 중심으로 변경)
+## 💡 주요 키워드
+- EL, JSTL, param, requestScope, sessionScope, pageContext, cookie  
+- 반복, 조건, 포맷, null 처리, 자동 캐스팅  
 
+---
 
-### EL
-    - 기본 표현 법 : [${attribute_name}]
-    - JSP의 expression(<%=...%>) 대체
-    - 단순한 출력은 물론 웹 스코프에 저장된 attribute를 사용하는데 매우 편리
-    > 작은 범위에서 큰 범위로 확장하며 attribute 검색하여 처음 발견된 값을 활용
-    (page -> request -> session -> application)
-    > 동일한 이름의 attribute가 있는데 큰 범위의 attribute를 사용하고 싶다면, 명시적으로 scope를 지정해야 함 [${sessionScope.sum}]
-    - 값이 없을 경우 null이 아닌 공백으로 표시 
+## 🔹 EL(Expression Language)
+> JSP에서 `${}`로 데이터를 간편하게 표현  
+> 복잡한 `<%= ... %>` 대신 간단한 출력, 스코프 탐색 가능  
 
-#### 주요 EL 내장 객체
-이름 | 객체 타입 | 표현 데이터 | 사용 예
-pageContext | PageContext | 현재 페이지의 컨텍스트 | ${pageContext}
-requestScope | Map | 현재 요청 스코프의 속성 | ${requestScope.attributeName}
-sessionScope | Map | 현재 세션 스코프의 속성 | ${sessionScope.attributeName}
-param | Map | 요청 파라미터의 단일 값 | ${param.parameterName}
-cookie | Map | 현재 요청의 쿠키 정보 | ${cookie.cookieName}
+### ✅ 특징
+- 범위: **page → request → session → application**
+- 동일 이름의 attribute가 여러 스코프에 존재하면 **작은 범위 우선**
+- 값이 없으면 **null 대신 공백 출력**
 
-#### param 예시
+### 🧩 주요 EL 내장 객체
 
-* 요청 URL
-```bash
+| 이름 | 객체 타입 | 설명 | EL 사용 예 |
+|------|-----------|------|------------|
+| pageContext | PageContext | 현재 페이지 컨텍스트 | `${pageContext}` |
+| requestScope | Map | 요청 스코프 속성 | `${requestScope.attr}` |
+| sessionScope | Map | 세션 스코프 속성 | `${sessionScope.user}` |
+| param | Map | 요청 파라미터 단일 값 | `${param.name}` |
+| paramValues | Map | 요청 파라미터 배열 값 | `${paramValues.hobby}` |
+| cookie | Map | 요청 쿠키 정보 | `${cookie.sessionId.value}` |
+
+---
+
+### 📝 param 예시
+**URL 요청(단일 파라미터)**
+```bash 
 GET /test.jsp?hobby=reading&name=eunjin
 ```
 
-* EL에서 접근 방법:
+**EL에서 접근 방법:**
 ```jsp
 ${param.hobby} → "reading"
 ${param.name}  → "eunjin"
 ```
 
 
-* 요청 URL
+**요청 URL(다중 값 파라미터)**
 ```bash
 GET /test.jsp?hobby=reading&hobby=swimming
 ```
 
-* EL에서 접근 방법:
+**EL에서 접근 방법:**
 ```jsp
 ${param.hobby}       → "reading"   (첫 번째 값만 가져옴)
 ${paramValues.hobby} → ["reading","swimming"]  (모든 값 배열)
 ```
 
-#### 객체 접근 법
-- JavaBeans의 property에 사용할 때 set/get을 제외하고 첫 글자를 소문자로 접근
-    > property에 직접 접근하는 것이 아님; setter/getter가 동작
-- Record는 그냥 property 이름 사용
-- Map 계열은 Key로 접근
+#### 🧩 객체 접근 법
+- **JavaBeans**: property 접근 시 set/get 제외하고 첫 글자를 소문자로 접근  
+  > setter/getter가 동작, 직접 property 접근 아님
+- **Record**: property 이름 그대로 사용
+- **Map 계열**: Key로 접근
 
-표기법 | 설명 | 활용 예
-. : [${obj.property}] | 객체지향적이며 간단. java-naming룰에 어긋나면 사용 불가 | [${paramValues.names[0]}] (O), [${header.User-Agent}] (X) -> header.User에 Agent를 빼는 연산을 수행하려고 함(원래 의도와 달라짐)
-[ ] : [${obj[property]}] | property의 형태에 상관 없이 사용 가능 | [${paramValue["names"][0]}] (O), [${header["User-Agent"]}] 
+| 표기법 | 설명 | 활용 예 |
+|--------|------|----------|
+| `.` | 객체지향적, 간단. java-naming 룰 위반 시 사용 불가 | `${paramValues.names[0]}` ✅, `${header.User-Agent}` ❌ |
+| `[]` | property 형태 제한 없음, 특수문자 포함 Key 가능 | `${paramValues["names"][0]}`, `${header["User-Agent"]}` ✅ |
 
-- 객체의 property뿐만 아니라 일반 메서드도 사용 가능
+- 객체 property뿐 아니라 일반 메서드도 사용 가능
 ```jsp
-    List<String> friends=List.of("eun", "jin");
-    request.setAttribute("users", friends);
+List<String> friends = List.of("eun", "jin");
+request.setAttribute("users", friends);
 
-    <li>friends 수: ${friends.size()}, eun 포함 여부? ${friends.contains(eunjin)}</li>
+<li>friends 수: ${friends.size()}, eun 포함 여부? ${friends.contains('eun')}</li>
+
 ```
 
 ---
 
-#### EL 연산자
+
+####  ⚡ EL 연산자
 > 산술연산, 비교 연산, 논리 연산, 상향 연산(? :), ***empty 연산***(데이터의 존재 여부를 나타내는 단항 연산자)
 
 - 자바와 다른 점
@@ -88,13 +93,16 @@ ${paramValues.hobby} → ["reading","swimming"]  (모든 값 배열)
     - 빈 문자열
     - 길이가 0인 배열
     - 빈 Collection 객체
+
 ---
 
-### JSTL
+
+### 📚 JSTL
     - 자주 사용되는 기능에 대해 정형화된 태그 제공
     - 별도의 라이브러리 추가 설치 필요
 
-### 사용 예시
+### 📝 사용 예시
+#### **Before(EL&JSTL 사용 전)**
 ```jsp
 <%-- EL&JSTL 사용 전 --%>
 <% 
@@ -118,10 +126,12 @@ ${paramValues.hobby} → ["reading","swimming"]  (모든 값 배열)
 <%
 } //if
 %>
-// 뒤에 <% }%>로 안 닫아주면 컴파일 에러가 발생한다.(500 error)
 ```
 
+💡 주의: <% } %> 생략 시 컴파일 에러(500) 발생
 
+
+#### **After(EL&JSTL 사용 후)**
 ```jsp
 <%-- 사용 후--%>
 <c: set var="val" value="${param.value}/>
