@@ -65,11 +65,13 @@ Set-Cookie: sessionId=abc123; Path=/app
 > 의미 : 이 쿠키는 /app 경로와 그 하위 경로에서만 브라우저가 서버로 전송함
 
 #### 🚫 쿠키가 전송되지 않는 경우 예시
-요청 URL | 쿠키 전송 여부 
-/app/home | ✅ 전송됨
-/app/user/profile | ✅ 전송됨
-/login | ❌ 전송되지 않음
-/about | ❌ 전송되지 않음
+| 요청 URL            | 쿠키 전송 여부 |
+| ----------------- | -------- |
+| /app/home         | ✅ 전송     |
+| /app/user/profile | ✅ 전송     |
+| /login            | ❌ 미전송    |
+| /about            | ❌ 미전송    |
+
 > 쿠키가 유효한 경로(`/app`)에 포함되지 않은 요청에서는 쿠키가 아예 전송되지 않음
 
 - 경로 미 설정 시에는 context root 설정
@@ -138,3 +140,8 @@ Set-Cookie: sessionId=abc123; Path=/app
 2. 같은 요청 내 확인 불가: 현재 request에는 포함되지 않음
 3. 다음 요청에서 확인 가능: 브라우저가 쿠키를 서버로 전송할 때
 > 단, path를 지정했으면 **해당 path 또는 path 하위 경로**의 요청에서만 확인 가능함. (미지정 시에는 모든 page에서 확인 가능)
+
+
+---
+
+## Session
