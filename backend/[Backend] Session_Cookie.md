@@ -3,16 +3,21 @@
 ---
 
 ## 🎯 학습 목표
-- HTTP의 Stateless 특성과 상태 관리 필요성 이해  
-- Cookie의 생성, 전송, 확인 과정 이해  
-- Path, MaxAge 등 쿠키 속성 이해 및 사용 방법 숙지  
+- HTTP의 **Stateless** 특성을 이해하고, 상태 관리 필요성 이해 🌐  
+- **Cookie**의 생성, 전송, 확인 과정을 이해하고, 주요 속성(Path, MaxAge, Secure, HttpOnly) 활용 방법 숙지 🍪  
+- **Session**을 통한 서버 측 상태 관리 및 세션 동작 과정 이해 🛡️  
+- HTTP 요청 처리 중 발생할 수 있는 **예외(404, 500)** 처리 과정 이해 ⚠️  
+- **Servlet Filter**와 `dispatcherTypes=ERROR`를 활용한 에러 처리 흐름 이해 🔗  
 
 ---
 
 ## 💡 주요 키워드
-- HTTP: Stateless, Request/Response, Header  
-- Cookie: name, value, path, maxAge, secure, httpOnly  
-- Session: 서버 측 상태 관리  
+- **HTTP**: Stateless, Request/Response, Header  
+- **Cookie**: name, value, path, maxAge, secure, httpOnly  
+- **Session**: 서버 측 상태 관리, JSESSIONID, getAttribute/setAttribute, invalidate  
+- **Exception 처리**: Checked/Unchecked Exception, ServletException wrapping, WAS 기본 에러 페이지  
+- **Filter**: 요청/응답 가로채기, dispatcherTypes(REQUEST, ERROR, FORWARD, INCLUDE, ASYNC), 에러 전용 Filter 활용
+
 
 ---
 
