@@ -96,10 +96,86 @@ request.setAttribute("users", friends);
 
 ---
 
+## 🌟 JSTL (Jakarta Standard Tag Library)
 
-### 📚 JSTL
-    - 자주 사용되는 기능에 대해 정형화된 태그 제공
-    - 별도의 라이브러리 추가 설치 필요
+> 💡 JSP에서 자바 코드(`scriptlet`) 없이도 **제어문, 반복문, 변수 처리 등을 HTML 태그처럼** 작성할 수 있게 해주는 표준 태그 라이브러리.
+
+### 🧩 JSTL 사용 선언
+
+> 📘 `taglib` directive를 활용해 JSTL을 JSP 페이지에 등록해야 함.
+
+```jsp
+    <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+```
+
+- **prefix** : 페이지 내에서 태그를 사용할 때 붙이는 접두사  
+- **uri** : 태그 라이브러리를 식별하는 고유 문자열로 라이브러리 로드에 사용  
+
+| 🧱 라이브러리 | ⚙️ 주요 기능 | 🏷️ 일반적인 접두어 | 🔗 URI |
+|:-------------:|:-------------:|:----------------:|:-------------------------:|
+| core | 변수 지원, 제어문, URL 처리 | `c` | `jakarta.tags.core` |
+
+
+### 💡 **Core 태그 정리**
+
+#### 🧩 변수 지원 (`<c:set>`, `<c:remove>`)
+
+```jsp
+    //<c:set var="name" value="value" scope="scope"/>
+    <c:set var="name" value="eunjin" scope="request"/>
+
+    //<c:remove var="name" scope="scope"/>
+    <c:remove var="name" scope="request"/>
+```
+
+| 속성 | 설명 |
+|:----:|:----|
+| `var` | 값을 저장할 EL 변수 이름 (String) |
+| `value` | 변수의 값 자체 |
+| `scope` | 변수를 저장할 영역 <br> → `page`(기본값), `request`, `session`, `application` |
+
+
+#### 🔍 조건문(`<c:if>`)
+```jsp
+    <c:if test="조건" [var="test_result"]>
+        ...
+    </c:if>
+```
+
+- `test` 속성에는 **true/false 값**이나 이를 리턴하는 **EL 표현식** 사용 가능  
+> 그 외의 값이 오면 **false**로 인식
+- `var="test_result"`의 경우 test의 결과값을 test_result 이름으로 EL 변수에 저장해서 재사용 가능
+
+
+#### 조건문(`c:choose>`, `<c:when>`, `<c:otherwise>`)
+```jsp
+    <c:choose>
+        <c:when test="...">...</c:when>
+        <c:when test="...">...</c:when>
+        <c:otherwise>...</c.otherwise>
+    </c:choose>
+```
+- `if-else` 구조와 유사한 **조건 분기 처리용 블록**  
+- 여러 조건을 한 번에 처리할 때 사용  
+
+
+#### 반복문(<c:forEach>)
+```jsp
+    <c:forEach var="name" items="collection" varStatus="status">...</c:forEach>
+    
+    <%
+        Map(String, String)map = Map.of("name", "eunjin", "age", "25");
+        request.setAttribute("person", map);
+    
+    %>
+
+    <c:forEach var="data" items="${person}" varStatus="status">
+        ${status.index}번째 요소 : ${data.key}, ${data.value}<br>
+    </c:forEach>
+```
+
+---
+
 
 ### 📝 사용 예시
 #### **Before(EL&JSTL 사용 전)**
@@ -145,4 +221,56 @@ request.setAttribute("users", friends);
 // param; 내장 객체로 Map 형태
 ```
 
+---
 
+## 🌐 페이지 모듈화 (Page Modularization)
+
+> 💡 대부분의 웹사이트는 `header`, `footer`, `sidebar` 등 **반복적인 구조**를 가지고 있음  
+> → 동일한 내용을 여러 페이지에서 사용하기 때문에 **페이지 모듈화**가 필요함
+
+---
+
+### 🧩 include directive (`<%@ include ... %>`)
+
+> ✨ 현재 페이지에 다른 JSP 파일의 내용을 **컴파일 전에 삽입**하여 재활용하는 방식  
+> 즉, **정적 포함(Static Include)** 이라고 함.
+
+#### ✅ 특징
+
+| 구분 | 설명 |
+|------|------|
+| ⏰ 포함 시점 | JSP가 **서블릿(Java 코드)** 으로 변환되기 **전에** 포함됨 |
+| 🧱 결과 | 하나의 큰 JSP 파일로 합쳐져 **하나의 Servlet**으로 컴파일됨 |
+| 🤝 변수 공유 | include된 파일은 같은 서블릿 내부에 존재하므로, **변수 및 선언부 공유 가능** |
+| ⚠️ 주의점 | “같은 서블릿 내부”에서만 공유 가능 (다른 JSP에서는 각각 독립적으로 컴파일됨) |
+
+---
+
+#### 💻 예시 코드
+
+```jsp
+<%@ include file="/header.jsp" %>
+```
+>JSP가 서블릿(Java 코드)으로 변환될 때,
+[header.jsp]의 내용이 그대로 현재 JSP 소스 안에 복사되어 붙여넣기 됨.
+결과적으로 별도의 서블릿이 아닌 하나의 서블릿 클래스로 컴파일됨.
+
+#### 🧠 코드 예시
+```jsp
+    <!-- main.jsp -->
+    <%@ include file="header.jsp" %>
+    <%! int count = 0; %>
+    <%
+        count++;
+        out.println("main.jsp count: " + count);
+    %>
+```
+```jsp
+    <!-- header.jsp -->
+    <%
+        out.println("header.jsp에서 count 접근: " + count);
+    %>
+```
+✅ 위 예시는 정상적으로 동작,
+> 이유: include directive가 두 파일을 하나의 JSP 소스로 합쳐서 컴파일하기 때문
+> 따라서 count 변수는 같은 서블릿 내부의 멤버 변수로 공유됨
