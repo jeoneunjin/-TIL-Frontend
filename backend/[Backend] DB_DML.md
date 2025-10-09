@@ -70,19 +70,21 @@ SET a.컬럼명 = b.컬럼명 [, a.컬럼명=b.컬럼명...]
 [WHRER 조건];
 ```
 
-### 예시
-- `employ` 테이블
-| emp_id | name | dept_id | salary |
-|--------|--------|---------|--------|
-| 1 | Alice | 10 | 5000 |
-| 2 | Bob | 20 | 4500 |
-| 3 | Charlie| 10 | 4800 |
+### 예시 테이블
 
-- `department` 테이블
+- **employee 테이블**
+| emp_id | name    | dept_id | salary |
+|--------|---------|---------|--------|
+| 1      | Alice   | 10      | 5000   |
+| 2      | Bob     | 20      | 4500   |
+| 3      | Charlie | 10      | 4800   |
+
+- **department 테이블**
 | dept_id | dept_name | raise_pct |
 |---------|-----------|-----------|
-| 10 | Sales | 0.1 |
-| 20 | HR | 0.05 |
+| 10      | Sales     | 0.1       |
+| 20      | HR        | 0.05      |
+
 
 - **목표 : 부서별 인상율을 반영하여 empolyee.salary 갱신**
 
