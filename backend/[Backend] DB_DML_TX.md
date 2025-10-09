@@ -4,6 +4,7 @@
 - 테이블 데이터 삽입, 수정, 삭제 방법 이해
 - JOIN, 중복 처리, 자동 증가 컬럼 활용법 숙지
 
+
 ---
 
 ## 💡 DML(Data Manipulation Language)
