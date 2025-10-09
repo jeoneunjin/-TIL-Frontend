@@ -80,6 +80,7 @@ SET a.컬럼명 = b.컬럼명 [, a.컬럼명=b.컬럼명...]
 | 2      | Bob     | 20      | 4500   |
 | 3      | Charlie | 10      | 4800   |
 
+
 - **department 테이블**
 | dept_id | dept_name | raise_pct |
 |---------|-----------|-----------|
