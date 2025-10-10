@@ -167,6 +167,7 @@ SELECT * FROM student WHERE age IS NULL;
 ```
 
 3. 논리 연산(AND, OR, NOT)
+   
 | 표현식              | 결과      |
 | ---------------- | ------- |
 | `TRUE AND NULL`  | `NULL`  |
