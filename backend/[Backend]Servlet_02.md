@@ -107,15 +107,16 @@
 
 
 #### 종류
-변수명 | 용도
-request | 클라이언트 요청 정보
-response | 서버의 응답 정보
-out | 클라이언트로의 정보 출력 스트림
-session | HTTP 세션에 대한 정보 
-application | 웹 애플리케이션에 대한 정보
-pageContent | 현재 JSP 페이지에 대한 정보 
-exception | isErrorPage = true인 경우 사용되는 예외 객체
-config | JSP 페이지에 대한 설정 정보 저장 
+|변수명 | 용도|
+|---------|-----------------------|
+| request | 클라이언트 요청 정보 |
+| response | 서버의 응답 정보 |
+| out | 클라이언트로의 정보 출력 스트림 |
+| session | HTTP 세션에 대한 정보 |
+| application | 웹 애플리케이션에 대한 정보 |
+|pageContent | 현재 JSP 페이지에 대한 정보 |
+|exception | isErrorPage = true인 경우 사용되는 예외 객체|
+|config | JSP 페이지에 대한 설정 정보 저장 |
 
 
 ### scope 
@@ -144,9 +145,10 @@ application scope | 웹 애플리케이션 전체에 걸쳐 유효; 모든 사�
 
 #### 🛠️ 주요 메서드 요약
 
-메서드 | 설명
-setAttribute(String key, Objec value) | 속성을 지정한 키와 값으로 저장(기존 속성 덮어쓰기 가능)
-getAttribute(String key) | 지정한 키에 해당하는 속성의 값을 반환(값이 존재하지 않으면 null 반환)
-removeAttribute(String key) | 지정한 키에 해당하는 속성 제거 
-getAttributeNames() | 모든 속성의 키를 Enumeration으로 반환
+| 메서드 | 설명 |
+|-----------------------|------------------------------------------------------------|
+|setAttribute(String key, Objec value) | 속성을 지정한 키와 값으로 저장(기존 속성 덮어쓰기 가능)|
+|getAttribute(String key) | 지정한 키에 해당하는 속성의 값을 반환(값이 존재하지 않으면 null 반환)|
+|removeAttribute(String key) | 지정한 키에 해당하는 속성 제거 |
+|getAttributeNames() | 모든 속성의 키를 Enumeration으로 반환|
 
