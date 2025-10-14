@@ -101,7 +101,9 @@
   - Q3 + 1.5 \* IQR 초과
 
 - boxplot를 이용하여 이상치 확인
-  ![Boxplot 설명](./img/ai/boxplot_explanation.png)
+  
+  ![Boxplot 설명](../img/ai/boxplot_explanation.png)
+
   | 구성 요소 | 의미 |
   | ----- | --------- |
   | 박스 하단 | Q1 |
