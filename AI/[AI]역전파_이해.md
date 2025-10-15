@@ -9,16 +9,16 @@
 ### 순전파(Forward Pass)
 
 > 초기 값을 바탕으로 모델의 예측값을 계산하는 방법(입력층 -> 출력층)
-> 구체적으로는 최초 입력값으로부터 각 층마다 존재하는 가중치($\w$, $\b$)와 연산하고, 활성함수를 통과시키는 과정으로 차례로 이어나가 최종 layer까지 계산한 후 실제 label과 오차를 계산하는 과정
+> 구체적으로는 최초 입력값으로부터 각 층마다 존재하는 가중치($w$, $b$)와 연산하고, 활성함수를 통과시키는 과정으로 차례로 이어나가 최종 layer까지 계산한 후 실제 label과 오차를 계산하는 과정
 
 ### 역전파(Backpropagation)
 
-> - 순전파 과정을 **역행** -> **오차를 기반**으로 가중치 값(가중치 $\w$ 와 편향 $\b$)들을 업데이트하기 위함
+> - 순전파 과정을 **역행** -> **오차를 기반**으로 가중치 값(가중치 $w$ 와 편향 $b$)들을 업데이트하기 위함
 > - 가중치 업데이트는 **경사하강법** 사용
 > - **연쇄 법칙(Chain Rule)**을 이용하여 각 파라미터에 대한 기울기를 계산
 
 $$
-\y = \w*\x + \b
+y = w*x + b
 $$
 
 ? `MAE` 대신 `MSE`를 쓰는 이유
@@ -45,7 +45,7 @@ print(weight, b)
 
 ### 손실계산(loss)
 
-> MSE(Mean Squared Error)로 실제 값($\y$)과 예측값($\hat{y}$)의 손실을 계산
+> MSE(Mean Squared Error)로 실제 값($y$)과 예측값($\hat{y}$)의 손실을 계산
 
 ```python
 loss = (y - y_pred)**2
@@ -54,38 +54,38 @@ print(loss.item())
 
 ### 역전파 계산
 
-- $\w$ 에 대한 편미분 :
+- $w$ 에 대한 편미분 :
 
-$\frac{\partial L}{\partial w} = \frac{\partial L}{\partial \hat{y}} \times \frac{\partial \hat{y}}{\partial w}$
+    $\frac{\partial L}{\partial w} = \frac{\partial L}{\partial \hat{y}} \times \frac{\partial \hat{y}}{\partial w}$
 
-- $\b$ 에 대한 편미분 :
+- $b$ 에 대한 편미분 :
 
-$\frac{\partial L}{\partial b} = \frac{\partial L}{\partial \hat{y}} \times \frac{\partial \hat{y}}{\partial b}$
+    $\frac{\partial L}{\partial b} = \frac{\partial L}{\partial \hat{y}} \times \frac{\partial \hat{y}}{\partial b}$
 
 #### 계산 과정
 
-> 초기값 $\x=2$, $\y=4$, $\w=2$, $\b=1$
+> 초기값 $x=2$, $y=4$, $w=2$, $b=1$
 
 1.  $\frac{\partial \hat{y}}{\partial w} = x$
     계산
 
     > 손실 함수(MSE)를 $\hat{y}$ 에 대해 미분
-    > $\y$−$\hat{y}$ 를 $\u$ 로 치환하면 $\L=\{u}^2$
+    > $y$−$\hat{y}$ 를 $u$ 로 치환하면 $L=\{u}^2$
 
 2.  $\frac{\partial \hat{y}}{\partial b} = 1$
     계산
 
-    > $\hat{y} = w x + b$ 를 $\w$ 에 대해 미분
+    > $\hat{y} = w x + b$ 를 $w$ 에 대해 미분
 
 3.  $\frac{\partial \hat{y}}{\partial b}$ 계산
 
     > $\hat{y} = w x + b$ 를 $\b$에 대해 미분
 
 4.  최종 기울기 계산
-
-$\frac{\partial L}{\partial w} = \frac{\partial L}{\partial \hat{y}} \times \frac{\partial \hat{y}}{\partial w} = 6 \times 2 = 12$
-
-$\frac{\partial L}{\partial b} = \frac{\partial L}{\partial \hat{y}} \times \frac{\partial \hat{y}}{\partial b} = 6 \times 1 = 6$
+   
+    $\frac{\partial L}{\partial w} = \frac{\partial L}{\partial \hat{y}} \times \frac{\partial \hat{y}}{\partial w} = 6 \times 2 = 12$
+    
+    $\frac{\partial L}{\partial b} = \frac{\partial L}{\partial \hat{y}} \times \frac{\partial \hat{y}}{\partial b} = 6 \times 1 = 6$
 
 #### 코드 수행
 
@@ -101,10 +101,10 @@ print(f"∂L/∂b: {b.grad.item()}")
 > 학습률 $\alpha = 0.1$을 사용하여 파라미터를 업데이트
 
 - $w$ 갱신:  
-  $w_{\text{new}} = w - \alpha \frac{\partial L}{\partial w} = 3 - 0.1 \times 12 = 1.8$
+    $w_{\text{new}} = w - \alpha \frac{\partial L}{\partial w} = 3 - 0.1 \times 12 = 1.8$
 
 - $b$ 갱신:  
-  $b_{\text{new}} = b - \alpha \frac{\partial L}{\partial b} = 1 - 0.1 \times 6 = 0.4$
+    $b_{\text{new}} = b - \alpha \frac{\partial L}{\partial b} = 1 - 0.1 \times 6 = 0.4$
 
 ```python
 # 학습률 0.1, 파라미터 업데이트
