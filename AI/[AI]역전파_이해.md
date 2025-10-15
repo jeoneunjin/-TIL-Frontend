@@ -6,13 +6,23 @@
 
 ## 1. 역전파
 
-## 1-1. 역전파(Backpropagation)
+### 순전파(Forward Pass)
 
-> 가중치 $$w 와 편향 $$b 를 계산하기위한 방법
-$$y = $$w$$x + $$b
+> 초기 값을 바탕으로 모델의 예측값을 계산하는 방법(입력층 -> 출력층)
+> 구체적으로는 최초 입력값으로부터 각 층마다 존재하는 가중치($\w$, $\b$)와 연산하고, 활성함수를 통과시키는 과정으로 차례로 이어나가 최종 layer까지 계산한 후 실제 label과 오차를 계산하는 과정
 
-? MAE 보다 MSE를 쓰는 이유
--> MAE로 하면 볼록한 형태가 아닌 뾰족한 형태; 0이 되는 곳을 미분할 수가 없음
+### 역전파(Backpropagation)
+
+> - 순전파 과정을 **역행** -> **오차를 기반**으로 가중치 값(가중치 $\w$ 와 편향 $\b$)들을 업데이트하기 위함
+> - 가중치 업데이트는 **경사하강법** 사용
+> - **연쇄 법칙(Chain Rule)**을 이용하여 각 파라미터에 대한 기울기를 계산
+
+$$
+\y = \w*\x + \b
+$$
+
+? `MAE` 대신 `MSE`를 쓰는 이유
+-> **MAE**로 하면 볼록한 형태가 아닌 **뾰족한 형태**; **0**이 되는 곳을 미분할 수가 없음
 
 ```python
 # 초기값 x=2, y=4, w=3, b=1
@@ -25,63 +35,76 @@ b = torch.tensor([1,0], requires_grad=True) # b
 print(weight, b)
 ```
 
-- AutoGrad
+- **AutoGrad**
 
-  > `.backward()`메서드를 호출하면 그래프를 따라 자동으로 역전파를 수행하여 기울기를 구할 수 있음
+  > `.backward()` 메서드를 호출하면 그래프를 따라 자동으로 역전파를 수행하여 기울기를 구할 수 있음
 
-- requires_grad
+- **requires_grad**
   > **"지금 변수를 미분할 수 있게 해줘"**라고 알려주는 속성
   > 모델의 가중치, 편향 또는 업데이트가 필요한 변수들에 `True`로 설정하여 사용할 수 있음
 
-## 순전파(Forward Pass)
+### 손실계산(loss)
 
-## 손실계산(loss)
+> MSE(Mean Squared Error)로 실제 값($\y$)과 예측값($\hat{y}$)의 손실을 계산
 
-## 역전파
+```python
+loss = (y - y_pred)**2
+print(loss.item())
+```
 
-> 연쇄 법칙(Chain Rule)을 이요ㅏ여 각 파라미터에 대한 기울기를 계산
+### 역전파 계산
 
-- $$y^ 에 대한 편미분 :
+- $\w$ 에 대한 편미분 :
 
-$$$\frac{∂L}{∂w}=$\frac{∂L}{∂y^}×$\frac{∂y^}{∂w}$$
+$\frac{\partial L}{\partial w} = \frac{\partial L}{\partial \hat{y}} \times \frac{\partial \hat{y}}{\partial w}$
 
-- $$b에 대한 편미분 :
+- $\b$ 에 대한 편미분 :
 
-$$$\frac{∂L}{∂b}=$\frac{∂L}{∂y^}×$\frac{∂y^}{∂b}$$
+$\frac{\partial L}{\partial b} = \frac{\partial L}{\partial \hat{y}} \times \frac{\partial \hat{y}}{\partial b}$
 
-### 계산 단계
+#### 계산 과정
 
-1. $$$\frac{∂L}{∂y^}$$ 계산
+> 초기값 $\x=2$, $\y=4$, $\w=2$, $\b=1$
 
-   > 손실 함수(MSE)를 y^ 에 대해 미분
-   > $$y−$$y^ 를 $$u 로 치환하면  L=$$u^2
+1.  $\frac{\partial \hat{y}}{\partial w} = x$
+    계산
 
-2. $$$\frac{∂y^}{∂w}$$ 계산
+    > 손실 함수(MSE)를 $\hat{y}$ 에 대해 미분
+    > $\y$−$\hat{y}$ 를 $\u$ 로 치환하면 $\L=\{u}^2$
 
-   > $$y^=wx+b$$ 를 $$w에 대해 미분
+2.  $\frac{\partial \hat{y}}{\partial b} = 1$
+    계산
 
-3. ∂y^∂b 계산
+    > $\hat{y} = w x + b$ 를 $\w$ 에 대해 미분
 
-   > $$y^=wx+b$$ 를 $$b에 대해 미분
+3.  $\frac{\partial \hat{y}}{\partial b}$ 계산
 
-4. 최종 기울기 계산
+    > $\hat{y} = w x + b$ 를 $\b$에 대해 미분
 
-> ∂L∂w=∂L∂y^×∂y^∂w=6×2=12
-> ∂L∂b=∂L∂y^×∂y^∂b=6×1=6
+4.  최종 기울기 계산
+
+$\frac{\partial L}{\partial w} = \frac{\partial L}{\partial \hat{y}} \times \frac{\partial \hat{y}}{\partial w} = 6 \times 2 = 12$
+
+$\frac{\partial L}{\partial b} = \frac{\partial L}{\partial \hat{y}} \times \frac{\partial \hat{y}}{\partial b} = 6 \times 1 = 6$
+
+#### 코드 수행
+
+```python
+loss.backward()
+
+print(f"∂L/∂w: {weight.grad.item()}")
+print(f"∂L/∂b: {b.grad.item()}")
+```
 
 ### 파라미터 업데이트
 
-> 학습률 &alpha; = 0.1$$을 사용하여 파라미터를 업데이트
+> 학습률 $\alpha = 0.1$을 사용하여 파라미터를 업데이트
 
-- $$
-  w 갱신
-  wnew=w−α∂L∂w=3−0.1×12=1.8
-  $$
+- $w$ 갱신:  
+  $w_{\text{new}} = w - \alpha \frac{\partial L}{\partial w} = 3 - 0.1 \times 12 = 1.8$
 
-- $$
-  b 갱신
-  bnew=b−α∂L∂b=1−0.1×6=0.4
-  $$
+- $b$ 갱신:  
+  $b_{\text{new}} = b - \alpha \frac{\partial L}{\partial b} = 1 - 0.1 \times 6 = 0.4$
 
 ```python
 # 학습률 0.1, 파라미터 업데이트
@@ -97,14 +120,30 @@ print(weight.item())
 print(b.item())
 ```
 
-- no_grad()
-  > 기울기를 추적하지 않도록 함
-  > 현재 상태에서의 기울기를 구한 값을 활용해야하기 때문에 이 메서드를 사용하지 않으면
-  > 다음 기울기에 누저하여 잘못된 값을 도출하게 됨
+#### 코드 수행
+
+```python
+learning_rate = 0.1
+
+with torch.no_grad(): #업데이트 시 추적 비활성화
+    weight -= learning_rate * weight.grad
+    b -= learning_rate * b.grad
+
+    weight.grad.zero_()
+    b.grad.zero_()
+
+print(weight.item())
+print(b.item())
+```
+
+- **no_grad()**
+  > - **기울기를 추적하지 않도록 함**
+  > - 현재 상태에서의 기울기를 구한 값을 활용해야하기 때문에 이 메서드를 사용하지 않으면
+  >   다음 기울기에 **누적**하여 잘못된 값을 도출하게 됨
 
 ## 검증
 
-> 새롭게 업데이트된 파라미터를 기반으로 다시 계산 진행
+- 새롭게 업데이트된 파라미터를 기반으로 다시 계산 진행(손실 계산 후 오차 계산)
 
 ---
 
