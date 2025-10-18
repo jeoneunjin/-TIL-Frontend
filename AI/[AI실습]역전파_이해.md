@@ -80,7 +80,7 @@ print(loss.item())
 
 3.  $\frac{\partial \hat{y}}{\partial b}$ 계산
 
-    > $\hat{y} = w x + b$ 를 $\b$에 대해 미분
+    > $\hat{y} = w x + b$ 를 $b$에 대해 미분
 
 4.  최종 기울기 계산
    
