@@ -1,6 +1,10 @@
 import seaborn as sns
 import pandas as pd
 
+'''
+기본적인 데이터 전처리
+'''
+
 df = sns.load_dataset('tips')
 df.head()
 
