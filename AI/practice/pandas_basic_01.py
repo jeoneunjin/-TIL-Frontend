@@ -1,112 +1,102 @@
-# 1. 값 두 개가 얼마나 가까운지
-''' 
-설정한 오차율보다 차이가 크면 False 반환, 작으면 True
-abs(a - b) → 실제 두 값의 차이
-rel_tol * max(abs(a), abs(b)) → 허용 가능한 최대 차이(상대 오차 한계)
+import seaborn as sns
+import pandas as pd
+
 '''
-from math import isclose
-
-is_close = isclose(3, 2, rel_tol=2)
-print(is_close) #true
-
-# 2. 특정 문자로 끝나는지 확인(str)
-str = "eunjin"
-print(str.endswith("n")) #true
-
-# 3. typehint 
+기본적인 데이터 전처리
 '''
-파이선은 동적 타이핑; 변수 선언 시 타입을 명시 X
-변수에 자료형을 알려주는 typehint 사용
-강제성은 없음 실제로 대입하는 값과 type이 달라도 문제 발생 X
-***개발자 참고용***
+
+df = sns.load_dataset('tips')
+df.head()
+
+# 1. groupby + pivot
 '''
-res : int = "hello"
+pandas를 사용하여 `tip` 데이터를 성별과 요일별 평균으로 정리,
+마지막에는 행렬 형태(pivot table)로 바꾸기
+'''
+    # 1. groupby -> sex, day 컬럼을 기준으로 그룹화 
+    # 2. ['tip'] 그룹화 후 tip 컬럼만 선택 
+    # 3. .mean() 각 그룹별 tip의 평균 계산
+    # 4. .reset_index() Multiindex -> 일반 컬럼으로 변환
+grouped = df.groupby(['sex', 'day'])['tip'].mean().reset_index()
 
+    # 행이 되는 컬럼 : sex, 열이 되는 컬럼 day, 교차점(cell)에 들어갈 값 tip
+pivot_table = grouped.pivot(index='sex', colums='day', values='tip')
 
-#. list(순서 O, 변경 O)
-l = [1,2,True,"apple"]
+    # 2. 컬럼 추가
+df['tip_percent'] = df['tip'] / df['total_bill']
+    # 3. 필터링
+    # 팁 비율이 20퍼 이상인 경우만 필터링
+high_tippers = df[dp['tip_percent'] >= 0.2]
 
-# 특정 값 포함 여부
-print(3 in l)
-
-# 짝수 인덱스 추출(인덱싱)
-print(l[1::2])
-
-# 홀수는? 
-print(l[::2])
-
-# 두 list 붙이기 
-double_list = l + l
-
-# reverse() vs reversed()
-l.reverse() # 리턴값 None, 객체 자체를 바꿈 
-
-rev = reversed(l) # 원본 변경 X, 결과 iterator list()나 tuple로 감싸야 실제 데이터를 볼 수 있음 
-print(list(rev))
-# +) iterator = "반복 가능한 객체에서 하나씩 값을 꺼내는 장치"
-
-# tuple (순서 O, 변경 X)
-tuple = (10, 20, 'cherry')
-
-# set (순서 X, 중복 X)
-set = {1,2,3}
-
-# 이어 붙이기? -> 불가능; 집합은 덧셈 연산이 불가하다
-try:
-    result = set = set
-except TypeError:
-    print("set는 덧셈 연산 불가능")
-
-# 인덱싱? -> 불가능; 집합은 인덱싱이 불가하다
-try:
-    subset = set[1:3]
-except TypeError:
-    print("set는 인덱싱 불가능")
+# 2.long-format으로 변환
+'''
+- Wide-format(넓은 형식)
+    - 여러 개의 측정값/변수가 각각 열로 표현됨
+    - 읽기는 편하나 groupby나 시각화에 비효율적
     
-# 교집합
-set2 = {3,4,5}
-print(set & set2)
+    size   total_bill    tip
+    2           16.99   1.01
+    3           10.34   1.66
+   
+- Long-format(길게 늘어진 형식)
+    - 측정 항목을 하나의 열에 모으고, 값은 별도 열로 표현
+    - groupby, pivot 시각화 등에 유용하게 사용
+    
+    
+    size        item   amount
+    2     total_bill    16.99
+    2            tip     1.01
+    3     total_bill    10.34
+    3            tip     1.66
 
-# 합집합
-print(set | set2)
-
-# 차집합
-print(set - set2)
-
-# 대칭차집합
-# 두 집합에서 겹치지 않는 원소만 남김
-print(set ^ set2)
-
-# dict (순서 X)
 '''
-dict에 부가적인 기능을 탑재한 빌트인 딕셔너리가 추가로 존재
-1. defaultdict: 기본값을 지정할 수 있는 딕셔너리, 키가 존재하지 않을 때 KeyError 대신 지정된 기본값을 자동으로 생성
-2. Counter : 리스트나 문자열 등 반복 가능한 객체의 요소 개수를 자동을 세어주는 딕셔너리, 가장 많이 등장한 요소를 쉽게 파악할 수 있음
+    # total_bill, tip 컬럼만 녹이기 
+    # size 컬럼은 그대로 유지 id_vars=['size] 사용
+    # 다음 컬럼을 가진 결과 만들기['size', 'item', 'amount']
+'''
+출력 예시
+
+    size          item  amount
+    0     2 total_bill  16.99
+    1     3 total_bill  10.34
+    2     3 total_bill  21.01
+    3     2 total_bill  23.68
+    4     4 total_bill  24.59
+    ...
+    483 3          tip  5.92
+    484 2          tip  2.00
+    485 2          tip  2.00
+    486 2          tip  1.75
+    487 2          tip  3.00
 '''
 
-from collections import defaultdict, Counter
+tips = sns.load_dataset("tips")
+melted = pd.melt(
+    tips,
+    id_vars=['size'], #그대로 유지할 컬럼
+    value_vars=['total_bill', 'tip'], #녹일 컬럼
+    var_name='item', #녹인 후의 컬럼 이름
+    value_name='amount' #값이 들어갈 컬럼 이름
+)
 
-# defaultdict
-dd = defaultdict(int)
-# 아직 eunjin이라는 key값에 해당하는 value가 없지만 +=1 연산이 가능
-dd['eunjin'] += 1
-print(dict(dd)) # {'eunjin' : 1}
+# size별 평균 팁 비율 구하기
+    # 1. size 컬럼을 기준으로 tip_percent 평균 계산
+    # 2. size=1부터 size=6까지 평균 비율 구하기 
+    
+lf = sns.load_dataset("tips")
+lf['tip_percent'] = lf['tip'] / lf['total_bill']
+size_group = df.groupby('size')['tip_percent'].mean()
 
-# Counter 
-fruits = ['apple', 'apple', 'banana']
+'''
+주의할점! 
+pivot()은 한 컬럼(Series)만 values로 받아야 함 = groupby 결과는 Series이어야 함
 
-counter = Counter(fruits)
-print(dict(counter)) # {'apple' : 2, 'banana' : 1}
+아까 grouped = df.groupby(['sex', 'day'])['tip'].mean().reset_index()
+에서 reset_index()를 해도 괜찮은 이유? 
+→ ['tip']으로 단일 컬럼만 선택했기 때문에 결과가 Series였음
+→ 그 뒤에 reset_index()를 해도 DataFrame이지만 values로 지정한 tip은 여전히 단일 컬럼임
+따라서 pivot()에 values='tip'으로 지정해도 에러 없이 동작
 
-# dict 합치기
-d1 = {
-    1 : "apple",
-    2 : "banana"
-}
-d2 = {
-    1 : "cherry",
-    3 : "dragonfruit"
-}
-# 같은 키가 있으면 오른쪽(d2)값으로 덮어씀
-print(d1 | d2)
++ 위의 예시에도 사실 .reset_index()를 해도 된다. 단일 컬럼이기 때문
+'''
 
