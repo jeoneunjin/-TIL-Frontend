@@ -160,3 +160,47 @@ resnet50.eval()
 ```
 
 #### 이미지 전처리
+
+```python
+preprocess = transforms.Compose([
+    transforms.Resize((224,224))
+
+    transforms.ToTensor(),
+
+    transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                         std=[0.229, 0.224, 0.225])
+])
+```
+
+#### ResNet-50으로 예측
+
+```python
+img_tensor = preprocess(image).unsqueeze(0).to("cuda")
+with torch.no_grad(): #추론이므로 가중치 업데이트를 비활성화
+    # 모델에 전처리된 이미지 텐서를 입력하여 예측 결과를 얻음
+    ouput = resnet50(img_tensor)
+probs = torch.nn.functional.softmax(output, dim=1)[0]
+```
+
+---
+
+## 4. ResNet18 모델 전이학습(리니어 프로빙)
+
+### 4.1 전이학습
+
+#### 전이학습(Transfer Learning)의 기본 아이디어
+
+- **문제:**
+  이미지 분류를 처음부터 학습하려면 수십만~수백만 장의 데이터와 긴 학습 시간이 필요함
+- **해결:**
+  다른 데이터셋(ImageNet)에서 이미 학습된 특징(feature) 을 재사용하면, 적은 데이터로도 학습이 가능해짐
+  -> 새 데이터셋에서도 기본 특징 추출 능력은 그대로 활용하고, 최종 분류 레이어만 바꾸면 됨
+
+### 4-1. ResNet18 모델 전이학습 과정
+
+0. 파인튜닝에 사용할 합성 이미지 데이터셋을 구성(하나가 아닌 여러 클래스의 이미지가 필요)
+1. 사전학습된 ResNet18 모델 불러오기
+2. 출력 레이어를 데이터셋에 맞게 변경하고 학습시킴
+   - PyTorch의 torchvision.models.resnet18 함수 이용하여 ImageNet 가중치를 로드, 모든 컨볼루션 레이어의 가중치는 동결
+3. 마지막 출력(fully connected layer - fc layer)만 데이터의 클래스 수에 맞게 새로 초기화하여 학습
+   -> 학습해야 할 파라미터 수가 크게 줄어들어 작은 데이터셋에도 빠르게 학습이 가능
