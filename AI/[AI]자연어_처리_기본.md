@@ -160,15 +160,20 @@ $$
     1. 순서 정보 부재
        > **Positional Encoding**으로 해결
        > 각 단어의 위치 벡터 정리 → 단어 임베딩 값에 더해 최종 입력으로 사용
+       > 
        > 방법 1) Sinusoidal Positional Encoding : sin/cos 함수를 합성해 위치 벡터 만듦
+       > 
        > 방법 2) Learned Absolute Embedding : 위치 벡터를 모두 학습 파라미터로 설정하여 학습 과정에서 데이터에 맞춰 최적화
     2. 비선형성 부족
        > **Feed-Forward Network**으로 해결
+       > 
        > 각 단어 출력 벡터에 Feed-Forward Network(Fully Connected + ReLU등) 추가
+       > 
        > 은직층마다 적용하여 층을 쌓을수록 비선형 조합 가능
     3. 미래 참조 문제; 아직 생성되지 않아야 할 미래 단어도 참조
        > **Masked Self-Attention**으로 해결
-       > Attention Score을 계산할 때 미래 단어에 해당하는 항목을 -무한대로 설정(계산 반영 X  
+       > 
+       > Attention Score을 계산할 때 미래 단어에 해당하는 항목을 -무한대로 설정(계산 반영 X)
         
 
 ---
