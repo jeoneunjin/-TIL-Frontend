@@ -115,19 +115,61 @@ $$
 ---
 
 ## 7. Attention
-
+- **특징**
+  - decoder + encoder 구조
+  - 매 타임스텝마다 어떤 구절/단어에 집중할지 가중치 계산
+      - 어느 부분에 집중 했는지 알 수 있어, 의사결정 과정을 해석할 수 있는 단서가 됨
+      - 단어와 단어 간 매핑 관계를 자연스럽게 학습
+- **Query, Value**
+  | 벡터       | 역할                              |
+  | --------- | -------------------------------- |
+  | Query     | decoder의 hidden state                   |
+  | Value      | encoder의 hidden state                     |
+> - decoder에서 문장을 생헝할 때 value를 참고
+> - 각 decoder의 hidden state와 ahems hidden states간의 관계를 Query와 Values 관계로 볼 수 있음
+> - 입력-출력 문장 관계에 Attention 매커니즘 적용
+  
 - **문제:** RNN → 입력 문장 전체를 하나의 벡터로 요약 → 정보 손실(Bottleneck)
 - **효과**
   1. NMT 성능 향상
-  2. Bottleneck 문제 완화
+  2. Bottleneck 문제 완화 → decoder가 encoder의 모든 hidden state에 접근
   3. Vanishing Gradient 완화
-- **구성**
+---
+
+## 8. Self-Attention
+- **특징**
+    - 한 문장 내에서 Attention 매커니즘이 적용 됨
+    - 한 문장 내에서 Query, Key, Value가 모두 발생
+- **Query, Key, Value**
   | 벡터       | 역할                              |
   | --------- | -------------------------------- |
-  | Query     | 참조할 정보 요청                   |
+  | Query     | 참조할 정보(내가 지금 관심 있는 단어)                   |
   | Key       | 정보 특성 표현                     |
-  | Value     | 실제 정보 내용                     |
-- 출력: Values 가중합으로 계산
+  | Value     | 실제로 참조되는 정보 내용(문장 내 단어들의 벡터 정보)                     |
+> - **과정 :**
+>   1. Query와 문장 내 모든 단어의 Key로 유사도 계산
+>   2. Softmax로 확률 분포를 표현 → Attention Weight를 얻음
+>   3. weight와 각 단어의 Value 곱하여 가중합을 구함 → 해당 query의 context vector 얻음
+> - 문장 내부 단어들 간 관계에 Attetion 매커니즘 적용
+
+
+- **RNN의 문제와 해결 :**
+    1. 병렬화 처리 어려움 → 한꺼번에 단어마다의 Attention score 구함
+    2. 장기 의존성 포착 어려움 → 문장 내 단어들끼리 서로 직접 상호작용(상호작용 O(1) 접근)
+- **Self-Attention의 한계와 해결:**
+    1. 순서 정보 부재
+       > **Positional Encoding**으로 해결
+       > 각 단어의 위치 벡터 정리 → 단어 임베딩 값에 더해 최종 입력으로 사용
+       > 방법 1) Sinusoidal Positional Encoding : sin/cos 함수를 합성해 위치 벡터 만듦
+       > 방법 2) Learned Absolute Embedding : 위치 벡터를 모두 학습 파라미터로 설정하여 학습 과정에서 데이터에 맞춰 최적화
+    2. 비선형성 부족
+       > **Feed-Forward Network**으로 해결
+       > 각 단어 출력 벡터에 Feed-Forward Network(Fully Connected + ReLU등) 추가
+       > 은직층마다 적용하여 층을 쌓을수록 비선형 조합 가능
+    3. 미래 참조 문제; 아직 생성되지 않아야 할 미래 단어도 참조
+       > **Masked Self-Attention**으로 해결
+       > Attention Score을 계산할 때 미래 단어에 해당하는 항목을 -무한대로 설정(계산 반영 X  
+        
 
 ---
 
