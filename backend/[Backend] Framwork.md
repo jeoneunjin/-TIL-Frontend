@@ -1,4 +1,4 @@
-# 🤖 Framework & Testing 학습 요약
+# 📝 Framework & Testing 학습 요약
 
 ## 📚 목차
 1. [Framework](#1-framework)
