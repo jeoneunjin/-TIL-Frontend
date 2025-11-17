@@ -1,8 +1,28 @@
 # Vue + TypeScript 프로젝트 시작
 
 ## 목차
-
-1. ***
+- [Vue + TypeScript 프로젝트 시작](#vue--typescript-프로젝트-시작)
+  - [목차](#목차)
+  - [1. 프로젝트 시작](#1-프로젝트-시작)
+    - [1-1. 기본 프로젝트 템플릿 구조](#1-1-기본-프로젝트-템플릿-구조)
+    - [1-2. 각 폴더의 역할](#1-2-각-폴더의-역할)
+      - [📁 `src/assets`](#-srcassets)
+      - [📁 `src/components`](#-srccomponents)
+      - [📁 `src/views`](#-srcviews)
+      - [📁 `src/router`](#-srcrouter)
+      - [📁 `src/store`](#-srcstore)
+      - [📁 `src/services` ⭐ (API 호출/관리 폴더)](#-srcservices--api-호출관리-폴더)
+      - [도메인 단위로 나누기](#도메인-단위로-나누기)
+      - [📁 `src/types`](#-srctypes)
+      - [📁 `src/utils`](#-srcutils)
+  - [2. 프로젝트 설정](#2-프로젝트-설정)
+    - [1. PrimeVue 설치 및 초기 설정](#1-primevue-설치-및-초기-설정)
+      - [0. PrimeVue 사용을 고려한 구조 확장](#0-primevue-사용을-고려한-구조-확장)
+      - [1.1. PrimeVue 및 종속성 설치](#11-primevue-및-종속성-설치)
+      - [1-2. `main.ts` 파일 설정](#1-2-maints-파일-설정)
+      - [1-3. 컴포넌트 등록 방식](#1-3-컴포넌트-등록-방식)
+    - [2. 프로젝트 구조](#2-프로젝트-구조)
+      - [2.1. 커스텀 컴포넌트 래핑 (Base Components)](#21-커스텀-컴포넌트-래핑-base-components)
 
 ---
 
@@ -242,3 +262,46 @@ import Button from 'primevue/button'; // 로컬 등록
 ```
 
 ---
+
+### 2. 프로젝트 구조
+PrimeVue를 사용해도 기본적인 프로젝트 구조는 변경되지 않지만, 스타일 관리와 커스텀 컴포넌트에 PrimeVue를 통합하는 방식이 중요
+
+| 디렉토리/파일 | PrimeVue를 고려한 역할
+|----------------|-------------------------|
+|`src/assets/styles`| PrimeVue 테마 오버라이딩 및 전역 스타일 정의 파일 (예: variables.scss, main.css)|
+|`src/components`|PrimeVue 컴포넌트를 래핑(Wrapping)하여 만드는 커스텀 컴포넌트를 포함|
+|`src/components/base`|(선택) PrimeVue 컴포넌트 기반으로 만든 프로젝트의 기본 UI 컴포넌트 (예: BaseButton.vue가 PrimeVue의 <Button>을 래핑함).|
+|`src/App.vue`|Layout을 정의하며, <Toast>나 <Dialog> 등 전역 모달/알림 컴포넌트를 여기에 위치시킬 수 있음|
+
+#### 2.1. 커스텀 컴포넌트 래핑 (Base Components)
+> 프로젝트 전체에서 동일한 스타일과 속성(Props)을 가진 버튼이 필요할 때, 
+> PrimeVue의 <Button>을 직접 사용하는 대신 커스텀 컴포넌트로 래핑하여 사용 이는 나중에 UI 라이브러리를 변경하거나 
+> 디자인을 일관되게 유지하는 데 큰 도움이 됩니다.
+
+```ts
+<script setup lang="ts">
+import Button from 'primevue/button';
+import type { ButtonProps } from 'primevue/button';
+
+// PrimeVue의 ButtonProps를 상속받아 사용
+interface Props extends /* @vue-ignore */ ButtonProps {
+  // 프로젝트에서 사용하는 특정 스타일을 위한 Prop 추가
+  styleType?: 'primary' | 'secondary' | 'danger';
+}
+
+const props = defineProps<Props>();
+
+// styleType에 따라 class나 다른 PrimeVue prop을 계산하여 전달
+const severity = computed(() => {
+    if (props.styleType === 'danger') return 'danger';
+    if (props.styleType === 'secondary') return 'secondary';
+    return 'primary';
+});
+</script>
+
+<template>
+  <Button v-bind="$attrs" :severity="severity" :label="label || 'Submit'">
+    <slot></slot>
+  </Button>
+</template>
+```
