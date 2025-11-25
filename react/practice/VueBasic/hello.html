@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="app">{{ message }}</div>
+</body>
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <div id="app">
+        {{ message }}
+        <!-- v-on directive 사용하여 DOM 이벤트를 수신, 함수 내에서 반응형 변수를 변경하여 구성 요소 상태를 업데이트 -->
+        <button v-on:click="increment">{{count}}</button>
+    </div>
+
+
+    <script>
+    // ref 함수 
+    // 인자를 받아 value 속성이 있는 ref 객체로 래핑하여 반환
+    // value 값이 변경되면 해당 값을 사용하는 템플릿에서 자동 업데이트 
+    // 인자는 어떠한 타입도 가능
+    const { createApp, ref } = Vue;
+
+    // createApp()에 전달되는 객체는 Vue 컴포넌트(Component)
+    // 컴포넌트의 상태(data)는 setup() 함수 내에서 선언되어야 하며 객체를 반환해야 함
+    const app = createApp({
+        // 템플릿의 참조에 접근하려면 setup 함수에서 선언 및 반환 필요
+        // 템플릿에서 ref를 사용할 때는 .value를 작성할 필요없음(automatically unwrapped)
+        setup() {
+        const message = ref('Hello vue!');
+        console.log(message);
+        console.log(message.value);
+
+        const count = ref(0);
+        const increment = () => {
+            count.value++;
+        };
+
+        return {
+            message,
+            count,
+            increament,
+        }
+        }
+    });
+    
+    app.mount("app");
+</script>
+
+</html>
