@@ -29,7 +29,6 @@ pnpx @tailwindcss/cli init -p
 ```text
 my-project/
 ├─ tailwind.config.js (수동 생성)
-├─ postcss.config.js (수동 생성)
 ├─ src/
 │  ├─ assets/
 │  │  └─ styles/
@@ -58,21 +57,7 @@ export default {
 }
 ```
 
-### 2-2. postcss.config.js
-
-- Vite가 CSS를 빌드할 때 Tailwind를 적용하도록 지시
-- autoprefixer 등 PostCSS 플러그인을 실행할 설정 파일
-
-```js
-export default {
-  plugins: {
-    tailwindcss: {},
-    autoprefixer: {}
-  }
-}
-```
-
-### 2-3. tailwind.css (엔트리 CSS)
+### 2-2. tailwind.css (엔트리 CSS)
 
 - `@tailwind base;`, `@tailwind components;`, `@tailwind utilities;`
 - Tailwind의 모든 스타일이 실제로 빌드되는 파일
