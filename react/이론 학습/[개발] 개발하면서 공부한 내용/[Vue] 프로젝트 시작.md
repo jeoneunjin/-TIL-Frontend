@@ -33,7 +33,7 @@
   - [3. 추가\_프로젝트 구조](#3-추가_프로젝트-구조)
       - [2.1. 커스텀 컴포넌트 래핑 (Base Components)](#21-커스텀-컴포넌트-래핑-base-components)
   - [추가 설치](#추가-설치)
-      - [Tailwind vs PrimeVue 역할 차이](#tailwind-vs-primevue-역할-차이)
+      - [(추가) Tailwind vs PrimeVue 역할 차이](#추가-tailwind-vs-primevue-역할-차이)
       - [🔹 핵심 차이](#-핵심-차이)
 ---
 
@@ -413,37 +413,8 @@ pnpm add vue-router@4
 - pinia 설치(설정에서 이미 설치함)
 
 - Tailwind 설치
-```bash
-npm install -D tailwindcss postcss autoprefixer
-npx tailwindcss init -p
-```
 
-**tailwind.config.js 수정**
-```js
-export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{vue,js,ts}"
-  ],
-  theme: {
-    extend: {},
-  },
-  plugins: [],
-}
-```
-
-**src/assets/main.css 생성 또는 수정**
-```css
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-```
--> main.js 또는 main.ts에서 불러오기
-```ts
-import './assets/main.css'
-```
-
-#### Tailwind vs PrimeVue 역할 차이
+#### (추가) Tailwind vs PrimeVue 역할 차이
 
 | 라이브러리            | 역할          | 특징                                                           |
 | ---------------- | ----------- | ------------------------------------------------------------ |
