@@ -28,7 +28,7 @@
       - [1.1. PrimeVue 및 종속성 설치](#11-primevue-및-종속성-설치)
       - [추가로, 타입 지원 희망 시](#추가로-타입-지원-희망-시)
       - [1-2. `main.ts` 파일 설정(가장 중요 💡)](#1-2-maints-파일-설정가장-중요-)
-      - [2. 컴포넌트 등록 방식](#2-컴포넌트-등록-방식)
+      - [2. 컴포넌트 등록 방식 예시 코드(App.vue)](#2-컴포넌트-등록-방식-예시-코드appvue)
     - [3. 개발 서버 실행 및 확인](#3-개발-서버-실행-및-확인)
   - [3. 추가\_프로젝트 구조](#3-추가_프로젝트-구조)
       - [2.1. 커스텀 컴포넌트 래핑 (Base Components)](#21-커스텀-컴포넌트-래핑-base-components)
@@ -240,12 +240,17 @@ pnpm install
 
 ### 1. PrimeVue 설치 및 초기 설정
 
+> https://primevue.org/vite
+
 #### 1.1. PrimeVue 및 종속성 설치
 PrimeVue와 필수적인 아이콘 라이브러리(예: PrimeIcons)를 설치
 
 ```Bash
 # PrimeVue + PrimeIcons 설치 (필수)
 pnpm add primevue primeicons
+
+# PrimeVue 스타일 디자인 정의한 라이블러리 설치
+pnpm add primevue @primeuix/themes
 ```
 #### 추가로, 타입 지원 희망 시
 ```Bash
@@ -261,82 +266,96 @@ PrimeVue를 애플리케이션 전역에서 사용할 수 있도록 src/main.ts 
 - `src/main.ts`파일에 PrimeVue 관련 코드 추가
 
 ```ts
-// src/main.ts
+import { createApp } from 'vue'
+import { createPinia } from 'pinia'
 
-import { createApp } from 'vue';
-import App from './App.vue';
-import PrimeVue from 'primevue/config'; // 추가
-// Vue Router와 Pinia는 이미 Vite가 생성했을 거임
+import App from './App.vue'
+import router from './router'
 
-// -------------------- PrimeVue 필수 스타일 가져오기 --------------------
-// 1. 테마 파일 선택 (aura-light-green 테마 예시)
-import 'primevue/resources/themes/aura-light-green/theme.css'; 
-// 2. PrimeVue 기본 CSS
-import 'primevue/resources/primevue.min.css';
-// 3. 아이콘 세트
-import 'primeicons/primeicons.css';
+//----- Primevue
+import PrimeVue from 'primevue/config';
+import Aura from '@primeuix/themes/aura';
 
-const app = createApp(App);
-// ... Pinia, Router 설정 있음
+//----- Tailwind    
+//import './assets/styles/tailwind.css';
 
-// --- PrimeVue 플러그인 등록 ---
+const app = createApp(App)
+
+app.use(createPinia())
+app.use(router)
+
+//----- PrimeVue 플로그인 등록
 app.use(PrimeVue, {
-  ripple: true // 물결 효과 활성화 (선택 사항)
-});
+    preset: Aura //(선택 사항)
+})
 
-// app.use(router);
-// app.use(pinia);
+app.mount('#app')
 
-app.mount('#app');
 ```
-> ⚠️ 테마 선택: 위 예시에서는 aura-light-green 테마를 사용했음
-> PrimeVue 공식 웹사이트에서 원하는 테마 (예: lara-light-blue, arya-green 등)로 변경하여 사용
-
 ---
 
-#### 2. 컴포넌트 등록 방식
-PrimeVue는 수백 개의 컴포넌트를 가지고 있어, 애플리케이션의 크기를 줄이고 로딩 속도를 개선하기 위해 필요한 컴포넌트만 전역 등록하거나 각 컴포넌트(.vue 파일)에서 로컬 등록하는 것을 권장
-
-**✅ 추천: 전역 등록 (main.ts에서 자주 사용되는 컴포넌트만)**
-
-```ts
-// src/main.ts 에 추가
-
-import Button from 'primevue/button';
-import InputText from 'primevue/inputtext';
-
-// ... (다른 설정)
-
-app.component('Button', Button);
-app.component('InputText', InputText);
-
-// ... (app.mount('#app'))
-```
-
-**✅ 로컬 등록 (페이지/컴포넌트 내에서 등록)**
-특정 컴포넌트에서만 사용되는 경우, 해당 .vue 파일 내에서 import 하여 사용
-
-```ts
+#### 2. 컴포넌트 등록 방식 예시 코드(App.vue)
+> TailWind 또한 같이 확인하는 코드이므로, tailwind 설정 끝난 후 확인 또는 tailwind 부분만 주석 처리할 것
+```vue
 <script setup lang="ts">
-import { ref } from 'vue';
-import Card from 'primevue/card'; // 로컬 등록
-import Button from 'primevue/button'; // 로컬 등록
-// 'InputText'는 main.ts에서 전역 등록했다고 가정
+  import { ref } from 'vue';
+  import Button from 'primevue/button';
+  import InputText from 'primevue/inputtext';
+
+  // PrimeVue InputText에 바인딩할 데이터
+  const welcomeName = ref('사용자');
 </script>
 
 <template>
-  <Card>
-    <template #title>로그인</template>
-    <template #content>
-      <InputText placeholder="아이디" />
-      <Button label="로그인" />
-    </template>
-  </Card>
+  <!-- 
+    Tailwind CSS v4 테스트 영역:
+    - bg-teal-500: 배경색
+    - text-white: 텍스트 색상
+    - p-6: 큰 패딩
+    - rounded-xl: 둥근 모서리
+  -->
+  <div class="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4 sm:p-8">
+    
+    <div class="bg-teal-500 text-white p-6 rounded-xl shadow-2xl max-w-lg w-full mb-8 transition duration-300 hover:shadow-3xl">
+      <h1 class="text-3xl font-bold mb-2">Tailwind CSS Test (v4)</h1>
+      <p class="text-sm opacity-90">이 블록이 짙은 청록색이면 Tailwind가 잘 적용된 것입니다.</p>
+    </div>
+
+    <!-- PrimeVue 컴포넌트 및 상호작용 테스트 영역 -->
+    <div class="bg-white p-8 rounded-xl shadow-xl max-w-lg w-full space-y-6">
+      <h2 class="text-2xl font-semibold text-gray-800 border-b pb-3 mb-4">PrimeVue & Tailwind Demo</h2>
+
+      <!-- InputText 컴포넌트 테스트 -->
+      <div class="flex flex-col space-y-2">
+        <label for="username" class="text-gray-600 font-medium">이름 입력:</label>
+        <InputText id="username" v-model="welcomeName" class="w-full" type="text" />
+      </div>
+
+      <!-- PrimeVue Button 컴포넌트 테스트 -->
+      <div class="flex flex-col sm:flex-row gap-4">
+        <Button label="기본 버튼 (Aura 테마)"></Button>
+        
+        <!-- Tailwind 유틸리티 클래스로 PrimeVue 버튼 스타일링 -->
+        <Button 
+          :label="`${welcomeName}님 환영합니다!`" 
+          severity="success" 
+          class="shadow-lg hover:shadow-xl transition duration-300"
+        ></Button>
+      </div>
+
+      <p class="mt-6 text-sm text-gray-500">
+        👆 위의 버튼과 입력창에 PrimeVue의 'Aura' 테마 스타일이 적용되었는지 확인하세요.
+      </p>
+    </div>
+  </div>
 </template>
+
+<style scoped></style>
 ```
 
 ### 3. 개발 서버 실행 및 확인
-`npm run dev`로 개발 서버 실행
+- `npm run dev`로 개발 서버 실행
+- `http://localhost:5173/`으로 화면 확인
 
 ---
 
