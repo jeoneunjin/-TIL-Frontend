@@ -32,6 +32,9 @@
     - [3. 개발 서버 실행 및 확인](#3-개발-서버-실행-및-확인)
   - [3. 추가\_프로젝트 구조](#3-추가_프로젝트-구조)
       - [2.1. 커스텀 컴포넌트 래핑 (Base Components)](#21-커스텀-컴포넌트-래핑-base-components)
+  - [추가 설치](#추가-설치)
+      - [Tailwind vs PrimeVue 역할 차이](#tailwind-vs-primevue-역할-차이)
+      - [🔹 핵심 차이](#-핵심-차이)
 ---
 
 ## 1. 프로젝트 시작
@@ -379,3 +382,81 @@ const severity = computed(() => {
   </Button>
 </template>
 ```
+
+---
+
+## 추가 설치
+- axios 설치
+
+> https://axios-http.com/kr/docs/intro
+
+```bash
+#npm
+$ npm install axios
+
+#pnpm 
+$ pnpm add axios
+```
+
+- vue-router 설치(설정에서 이미 설치함)
+
+> https://router.vuejs.org/installation.html
+
+```bash
+#npm
+npm install vue-router@4
+
+#pnpm
+pnpm add vue-router@4
+```
+
+- pinia 설치(설정에서 이미 설치함)
+
+- Tailwind 설치
+```bash
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init -p
+```
+
+**tailwind.config.js 수정**
+```js
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{vue,js,ts}"
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
+```
+
+**src/assets/main.css 생성 또는 수정**
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+-> main.js 또는 main.ts에서 불러오기
+```ts
+import './assets/main.css'
+```
+
+#### Tailwind vs PrimeVue 역할 차이
+
+| 라이브러리            | 역할          | 특징                                                           |
+| ---------------- | ----------- | ------------------------------------------------------------ |
+| **Tailwind CSS** | **스타일링**    | HTML 요소에 유틸리티 클래스 붙여서 디자인 적용. 버튼, 텍스트, 레이아웃 등 모든 스타일을 직접 조합. |
+| **PrimeVue**     | **UI 컴포넌트** | 버튼, 테이블, 달력, 모달 등 미리 만들어진 Vue 컴포넌트 제공. 내부 로직 포함.             |
+
+
+#### 🔹 핵심 차이
+1. Tailwind(**스타일 중심**)
+  - “스타일을 어떻게 입힐지” 개발자가 직접 결정
+  - 자유도가 높고, 커스터마이징 쉽고, 반응형/상태 스타일 쉽게 가능
+  - HTML에 클래스 붙이는 방식 → UI 로직은 없음
+2. PrimeVue(**기능 중심**)
+  - “어떤 기능을 가진 UI를 바로 쓰고 싶을 때” 사용
+  - 내부 동작(클릭 이벤트, 폼 validation, 테이블 정렬 등)이 이미 구현됨
+  - 스타일은 어느 정도 기본 제공 → Tailwind로 세부 디자인 커스터마이징 가능
