@@ -36,7 +36,7 @@ const setupResponseInterceptor = (api) => {
         const originalRequest = error.config;
 
         if(error.response.status === 401 && !originalRequest._retry ) { // 401이 아니고, 재요청이 아닌 경우
-            return handleUnauthorizedError();
+            return handleUnauthorizedError(originalRequest, api);
         }
     })
 }
