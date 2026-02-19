@@ -2,8 +2,8 @@
 
 ## 📊 목차
 1. [프로젝트 기술 선택 배경](#1-프로젝트-기술-선택-배경)
-2. [실시간 영상 합성 성능 최적화 — FPS 87% 향상](#2-실시간-영상-합성-성능-최적화)
-3. [Canvas vs CSS 레이어링 기술 선택 — 정량적 비교 분석](#3-canvas-vs-css-레이어링-기술-선택)
+2. [실시간 영상 합성 성능 최적화 — FPS 87% 향상](#2-실시간-영상-합성-성능-최적화--fps-87-향상)
+3. [Canvas vs CSS 레이어링 기술 선택 — 정량적 비교 분석](#3-canvas-vs-css-레이어링-기술-선택--정량적-비교-분석)
 4. [Canvas + MP4 렌더링 Frame Drop 문제 해결](#4-canvas--mp4-렌더링-frame-drop-문제-해결)
 5. [배경 제거 WebRTC 송출 문제 해결 — 크로마키 기법 적용](#5-배경-제거-webrtc-송출-문제-해결--크로마키-기법-적용)
 6. [WebSocket & WebRTC 실시간 동기화 아키텍처](#6-websocket--webrtc-실시간-동기화-아키텍처)
@@ -65,7 +65,7 @@
 
 ---
 
-## 2. 실시간 영상 합성 성능 최적화
+## 2. 실시간 영상 합성 성능 최적화 — FPS 87% 향상
 
 ### 📌 문제 상황
 - **위치**: `src/components/media/VideoComposition.tsx`, `src/components/photobooth/CompositionCanvas.tsx`
@@ -151,7 +151,7 @@ ctx.drawImage(fgCanvas, x, y);
 
 ---
 
-## 3. Canvas vs CSS 레이어링 기술 선택
+## 3. Canvas vs CSS 레이어링 기술 선택 — 정량적 비교 분석
 
 ### 📌 문제 상황
 실시간 WebRTC 영상 2개(로컬 + AI 스트림)를 합성하는 UI 구현 시, **Canvas 합성**과 **CSS 레이어링** 중 어느 기술을 선택해야 할지 결정 필요
@@ -355,7 +355,7 @@ handleSegmentationResults(results) {
 - `THRESHOLD: 128` - 마스크 이진화로 녹색 번짐 방지
 - `SMOOTHING_ALPHA: 0.7` - 프레임 간 떨림 제거
 
-#### 2) 크로마키 송신용 스트림 생성
+#### 2) 크로마키 송신용 스트림 생성 (녹색 배경 합성)
 
 **위치:** `src/components/photobooth/CompositionCanvas.tsx`
 
@@ -376,166 +376,13 @@ function renderChromaKeyFrame() {
   ctx.drawImage(bgRemovalCanvas, 0, 0, 640, 480)
   // 결과: 녹색 배경 + 사람 전경
 }
+
+// WebRTC 스트림 생성
+const processedStream = chromaKeySenderCanvas.captureStream(30);
+setMyStream(processedStream);
 ```
 
----
-
-## 6. WebSocket & WebRTC 실시간 동기화 아키텍처
-
-### 📌 개요
-
-본 프로젝트는 **WebSocket**과 **WebRTC**를 결합하여 실시간으로 여러 사용자가 한 방에서 촬영에 참여할 수 있도록 설계되었습니다.
-
-### 🏗️ 전체 구조
-
-#### WebSocket (Socket.IO 기반 시그널링)
-- **역할**: 실시간 이벤트(입장, 퇴장, 준비, 이동, 촬영 등)와 방 상태 동기화
-
-#### 영상 합성 파이프라인
-```
-[송신 측]
-사용자 카메라
-    ↓
-MediaPipe processFrame (비동기, 백그라운드)
-    ├─ Temporal smoothing (프레임 간 안정화)
-    ├─ Mask processing (blur, threshold, brightness/contrast)
-    └─ 투명 배경 합성 (destination-in)
-    ↓
-bgRemovalCanvas (투명 전경)
-    ↓
-lastValidForeground에 복사 (Frame Holding)
-    ↓
-chromaKeySenderCanvas
-    ├─ 녹색 배경 (#00FF00) 채우기
-    └─ 투명 전경 합성
-    ↓
-captureStream(30fps)
-    ↓
-WebRTC 송출 (녹색 배경 + 사람)
-
-[수신 측]
-peer video stream
-    ↓
-peerProcessingCanvas에 drawImage
-    ↓
-applyChromaKeyRemoval (녹색 → alpha=0)
-    ↓
-offscreenCanvas에서 합성 (Double Buffering)
-    ├─ 배경: webm 영상
-    ├─ AI 동반자: AI video stream
-    └─ 전경: 크로마키 제거된 각 사용자
-    ↓
-outputCanvas에 원자적 복사
-    ↓
-화면 표시
-```
-
-### 적용 기술 스택
-- **React 19** + TypeScript + Vite
-- **상태 관리**: Zustand (실시간 상태) + TanStack Query (서버 상태)
-- **MediaPipe SelfieSegmentation**: 실시간 배경 제거 (WASM)
-- **Canvas API**: 고성능 영상 합성
-- **WebRTC**: P2P 실시간 스트리밍
-- **WebSocket (Socket.IO)**: 시그널링 및 실시간 이벤트 동기화
-- **Performance API**: FPS 측정 및 모니터링
-- **크로마키 기법**: 투명 배경 WebRTC 전송 우회
-
-### 핵심 기술 선택 이유
-1. **Vite**: ESM 기반 빠른 HMR, MVP 빠른 실험에 적합
-2. **Zustand**: 실시간 상태 관리에 최적 (WebRTC 연결, 참여자 상태)
-3. **TanStack Query**: 서버 상태 캐싱/동기화 전담
-4. **Canvas 합성**: CSS 레이어링 대비 FPS 2배, 메모리 13% 절감
-5. **크로마키 기법**: WebRTC의 알파 채널 제약 우회, 브라우저 호환성 확보
-
-### 성과 수치 정리
-| 개선 항목 | 개선 전 | 개선 후 | 개선율 |
-|----------|---------|---------|--------|
-| 영상 합성 FPS | 13-16 | 28-30 | **+87%** |
-| Canvas vs CSS (FPS) | 61.9 | 120.6 | **+95%** |
-| Canvas vs CSS (메모리) | 52MB | 45MB | **-13%** |
-| Frame Drop | 10-12/30s | 0 | **-100%** |
-| 깜빡임/잔상 | 심함 | 없음 | **-100%** |
-| CPU 부하 | 높음 | 낮음 | **-30%** |
-| 배경 제거 송출 | 실패 (빈 스트림) | 성공 (크로마키) | **해결** |
-
-### 주요 튜닝 파라미터
-- **MediaPipe**: `modelSelection: 1` (Landscape model)
-- **마스크 처리**: `BLUR: 2.5px`, `THRESHOLD: 128`, `BRIGHTNESS/CONTRAST: 200`
-- **Temporal smoothing**: `SMOOTHING_ALPHA: 0.7`
-- **크로마키 임계값**: `g > 110 && r < 100 && b < 100`
-- **Canvas FPS 제한**: 60fps (MP4 디코딩 병목 해결)
-  ```
-  interface WebRTCStore {
-    // Peer 연결 관리
-    peers: Record<string, PeerState>
-    addPeer: (userId: string, connection: RTCPeerConnection) => void
-    removePeer: (userId: string) => void
-    
-    // 미디어 스트림 관리
-    myStream: MediaStream | null
-    setMyStream: (stream: MediaStream | null) => void
-    
-    // 방 관리
-    joinRoom: (roomId: string) => Promise<void>
-    leaveRoom: () => void
-  }
-  ```
-  
----
-
-### 🔄 실시간 동기화 흐름
-
-#### 1. 방 입장 프로세스
-```
-사용자 입장 요청
-    ↓
-useRoomStore.joinRoom()
-    ↓
-WebSocket 'join' 이벤트 발송
-    ↓
-서버에서 방 정보 브로드캐스트
-    ↓
-useWebRTCStore.joinRoom() (미디어 연결 시작)
-    ↓
-PeerConnection 생성 및 Offer/Answer 교환
-    ↓
-실시간 스트림 동기화 완료
-```
-
-#### 2. Peer 연결 및 미디어 동기화
-- PeerConnection 객체로 각 사용자 간 P2P 연결 관리
-- Offer/Answer/ICE Candidate 교환은 WebSocket 시그널링을 통해 이루어짐
-- 각 Peer의 미디어 트랙(영상/음성) 동기화 및 교체 가능
-
-#### 3. 실시간 이벤트 동기화
-WebSocket 이벤트 수신 → Store 액션 호출 → 컴포넌트 자동 리렌더링
-
-```typescript
-// 예시: 위치 업데이트
-signalingService.on('move-updated', ({ userId, x, y }) => {
-  useWebRTCStore.getState().updatePeerPosition(userId, x, y)
-})
-
-// 예시: 촬영 완료
-signalingService.on('photo-captured', ({ imageUrl, participants }) => {
-  useRoomStore.getState().setPhotoResult(imageUrl, participants)
-})
-```
-
-### 🎯 핵심 설계 원칙
-
-**"모든 실시간 상태를 프론트엔드 Store에서 일관성 있게 관리하고, 컴포넌트는 Store만 바라보게 하여 유지보수성과 확장성을 높인다"**
-
-- 서버와의 통신은 Store 내부에서만 처리
-- UI는 Store 상태만 구독
-- 데이터 흐름이 명확하여 복잡도 감소
-
-### 📂 관련 파일
-- `src/pages/PhotoBoothPage.tsx` - 메인 촬영 페이지
-- `src/stores/useRoomStore.ts` - 방/참가자 상태 관리
-- `src/stores/useWebRTCStore.ts` - WebRTC 연결 상태 관리
-- `src/services/signaling/WebSocketSignalingService.ts` - WebSocket 시그널링
-- `src/utils/webrtc/PeerConnection.ts` - P2P 연결 관리
+**핵심 원리:**
 - 투명 대신 **완전한 단색 배경(#00FF00)**을 합성
 - 표준 비디오 코덱으로 전송 가능
 - 수신 측에서 색상 기반으로 투명 처리
@@ -604,18 +451,9 @@ applyChromaKeyRemoval(peerProcessingCtx, 320, 240)
 - Temporal smoothing으로 프레임 간 떨림 제거
 - Blur + Threshold 조합으로 경계 안정화
 
-### 🔧 관련 파일
-- `src/hooks/useBackgroundRemoval.ts` - MediaPipe 초기화 및 배경 제거
-- `src/hooks/useMaskProcessing.ts` - 마스크 후처리
-- `src/hooks/useTemporalSmoothing.ts` - 시간적 안정화
-- `src/components/photobooth/CompositionCanvas.tsx` - 크로마키 송수신 구현
-- `src/constants/segmentation.ts` - 설정 파라미터
+### 📌 추가 트러블슈팅: 스트림 등록 타이밍 문제
 
----
-
-### 추가 트러블슈팅: 스트림 등록 타이밍 문제
-
-#### 1) 스트림 등록 타이밍 문제
+#### 문제 상황
 ```typescript
 // Before: 잘못된 타이밍
 useEffect(() => {
@@ -628,22 +466,7 @@ useEffect(() => {
 - `bgRemovalOutputRef.current`가 존재해도 **캔버스에 실제 렌더링이 시작되기 전**에 실행
 - `isBgRemovalReady`가 true가 되어도 첫 프레임이 렌더링되기 전에 `captureStream`이 호출되면 빈 스트림 전송
 
-#### 2) React Hook 규칙 위반
-```typescript
-// Before: 함수 내부에 useEffect
-const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-  // ❌ 함수 내부에 useEffect가 있음!
-  useEffect(() => {
-    setVideoLayers((prev) => ...);
-  }, [peers]);
-};
-```
-- 매 마우스 이동마다 useEffect 재등록
-- 불필요한 리렌더링 발생
-
-### ✅ 해결 방법
-
-#### 1) 스트림 등록 타이밍 개선
+#### 해결 방법
 ```typescript
 const streamRegisteredRef = useRef(false);
 
@@ -675,47 +498,104 @@ useEffect(() => {
 }, [isBgRemovalReady, bgRemovalOutputRef, setMyStream]);
 ```
 
-#### 2) useEffect 구조 개선
-```typescript
-// After: 함수 외부로 분리
-useEffect(() => {
-  setVideoLayers((prev) =>
-    prev.map((layer) => {
-      if (layer.type === "user" && peers[layer.id]) {
-        const peer = peers[layer.id];
-        if (typeof peer.width === "number" && typeof peer.height === "number") {
-          return {
-            ...layer,
-            width: peer.width,
-            height: peer.height,
-          };
-        }
-      }
-      return layer;
-    })
-  );
-}, [peers]);
+### 🔧 관련 파일
+- `src/hooks/useBackgroundRemoval.ts` - MediaPipe 초기화 및 배경 제거
+- `src/hooks/useMaskProcessing.ts` - 마스크 후처리
+- `src/hooks/useTemporalSmoothing.ts` - 시간적 안정화
+- `src/components/photobooth/CompositionCanvas.tsx` - 크로마키 송수신 구현
+- `src/constants/segmentation.ts` - 설정 파라미터
+
+---
+
+## 6. WebSocket & WebRTC 실시간 동기화 아키텍처
+
+### 📌 개요
+
+본 프로젝트는 **WebSocket**과 **WebRTC**를 결합하여 실시간으로 여러 사용자가 한 방에서 촬영에 참여할 수 있도록 설계되었습니다.
+
+### 🏗️ 전체 구조
+
+#### WebSocket (Socket.IO 기반 시그널링)
+- **역할**: 실시간 이벤트(입장, 퇴장, 준비, 이동, 촬영 등)와 방 상태 동기화
+- **기능**: WebRTC Offer/Answer/ICE Candidate 교환, 방 참여자 상태 브로드캐스트
+
+#### WebRTC (P2P 미디어 스트리밍)
+- **역할**: 사용자 간 직접적인 영상/음성 스트림 전송
+- **최적화**: 크로마키 기법으로 배경 제거된 영상 전송
+
+### 🔄 실시간 동기화 흐름
+
+#### 1. 방 입장 프로세스
+```
+사용자 입장 요청
+    ↓
+useRoomStore.joinRoom()
+    ↓
+WebSocket 'join' 이벤트 발송
+    ↓
+서버에서 방 정보 브로드캐스트
+    ↓
+useWebRTCStore.joinRoom() (미디어 연결 시작)
+    ↓
+PeerConnection 생성 및 Offer/Answer 교환
+    ↓
+실시간 스트림 동기화 완료
 ```
 
-#### 3) 로컬 화면에도 배경 제거 적용
-```typescript
-// Before: 원본 비디오 사용
-const videoEl = layer.id === myUserId
-  ? userVideoRef.current  // ❌ 원본 비디오 사용
-  : participantVideoRefs.current[layer.id];
+#### 2. Peer 연결 및 미디어 동기화
+- PeerConnection 객체로 각 사용자 간 P2P 연결 관리
+- Offer/Answer/ICE Candidate 교환은 WebSocket 시그널링을 통해 이루어짐
+- 각 Peer의 미디어 트랙(영상/음성) 동기화 및 교체 가능
 
-// After: 배경 제거된 캔버스 사용
-const videoEl = layer.id === myUserId
-  ? bgRemovalCanvas  // ✅ 배경 제거된 캔버스 직접 사용
-  : participantVideoRefs.current[layer.id];
+#### 3. 실시간 이벤트 동기화
+WebSocket 이벤트 수신 → Store 액션 호출 → 컴포넌트 자동 리렌더링
+
+```typescript
+// 예시: 위치 업데이트
+signalingService.on('move-updated', ({ userId, x, y }) => {
+  useWebRTCStore.getState().updatePeerPosition(userId, x, y)
+})
+
+// 예시: 촬영 완료
+signalingService.on('photo-captured', ({ imageUrl, participants }) => {
+  useRoomStore.getState().setPhotoResult(imageUrl, participants)
+})
 ```
 
-### 📈 개선 결과
-✅ `isBgRemovalReady`가 true가 된 후 100ms 뒤 스트림 등록  
-✅ 배경 제거된 캔버스가 WebRTC로 정상 송출  
-✅ 로컬 화면에도 배경 제거된 영상 표시  
-✅ Peer들이 배경 제거된 내 영상 수신  
-✅ 불필요한 리렌더링 제거로 성능 개선
+### 🏛️ Store 중심 아키텍처
+
+#### WebRTC Store 구조
+```typescript
+interface WebRTCStore {
+  // Peer 연결 관리
+  peers: Record<string, PeerState>
+  addPeer: (userId: string, connection: RTCPeerConnection) => void
+  removePeer: (userId: string) => void
+  
+  // 미디어 스트림 관리
+  myStream: MediaStream | null
+  setMyStream: (stream: MediaStream | null) => void
+  
+  // 방 관리
+  joinRoom: (roomId: string) => Promise<void>
+  leaveRoom: () => void
+}
+```
+
+### 🎯 핵심 설계 원칙
+
+**"모든 실시간 상태를 프론트엔드 Store에서 일관성 있게 관리하고, 컴포넌트는 Store만 바라보게 하여 유지보수성과 확장성을 높인다"**
+
+- 서버와의 통신은 Store 내부에서만 처리
+- UI는 Store 상태만 구독
+- 데이터 흐름이 명확하여 복잡도 감소
+
+### 📂 관련 파일
+- `src/pages/PhotoBoothPage.tsx` - 메인 촬영 페이지
+- `src/stores/useRoomStore.ts` - 방/참가자 상태 관리
+- `src/stores/useWebRTCStore.ts` - WebRTC 연결 상태 관리
+- `src/services/signaling/WebSocketSignalingService.ts` - WebSocket 시그널링
+- `src/utils/webrtc/PeerConnection.ts` - P2P 연결 관리
 
 ---
 
@@ -725,27 +605,40 @@ const videoEl = layer.id === myUserId
 ```
 사용자 카메라
     ↓
-processFrame (비동기, 백그라운드)
+MediaPipe processFrame (비동기, 백그라운드)
+    ├─ Temporal smoothing (프레임 간 안정화)
+    ├─ Mask processing (blur, threshold, brightness/contrast)
+    └─ 투명 배경 합성 (destination-in)
     ↓
-bgRemovalCanvas 업데이트
+bgRemovalCanvas (투명 전경)
     ↓
 lastValidForeground에 복사 (Frame Holding)
     ↓
-offscreenCanvas에서 합성 (Double Buffering)
-    ├─ 배경: webm 영상
-    └─ 전경: lastValidForeground
+chromaKeySenderCanvas
+    ├─ 녹색 배경 (#00FF00) 채우기
+    └─ 투명 전경 합성
     ↓
-outputCanvas에 원자적 복사
+captureStream(30fps)
     ↓
-화면 표시 + WebRTC 송출
+WebRTC 송출 (녹색 배경 + 사람)
 ```
 
 ### 적용 기술 스택
 - **React 19** + TypeScript + Vite
-- **MediaPipe SelfieSegmentation**: 실시간 배경 제거
+- **상태 관리**: Zustand (실시간 상태) + TanStack Query (서버 상태)
+- **MediaPipe SelfieSegmentation**: 실시간 배경 제거 (WASM)
 - **Canvas API**: 고성능 영상 합성
-- **WebRTC**: 실시간 스트리밍
+- **WebRTC**: P2P 실시간 스트리밍
+- **WebSocket (Socket.IO)**: 시그널링 및 실시간 이벤트 동기화
 - **Performance API**: FPS 측정 및 모니터링
+- **크로마키 기법**: 투명 배경 WebRTC 전송 우회
+
+### 핵심 기술 선택 이유
+1. **Vite**: ESM 기반 빠른 HMR, MVP 빠른 실험에 적합
+2. **Zustand**: 실시간 상태 관리에 최적 (WebRTC 연결, 참여자 상태)
+3. **TanStack Query**: 서버 상태 캐싱/동기화 전담
+4. **Canvas 합성**: CSS 레이어링 대비 FPS 2배, 메모리 13% 절감
+5. **크로마키 기법**: WebRTC의 알파 채널 제약 우회, 브라우저 호환성 확보
 
 ### 성과 수치 정리
 | 개선 항목 | 개선 전 | 개선 후 | 개선율 |
@@ -756,6 +649,14 @@ outputCanvas에 원자적 복사
 | Frame Drop | 10-12/30s | 0 | **-100%** |
 | 깜빡임/잔상 | 심함 | 없음 | **-100%** |
 | CPU 부하 | 높음 | 낮음 | **-30%** |
+| 배경 제거 송출 | 실패 (빈 스트림) | 성공 (크로마키) | **해결** |
+
+### 주요 튜닝 파라미터
+- **MediaPipe**: `modelSelection: 1` (Landscape model)
+- **마스크 처리**: `BLUR: 2.5px`, `THRESHOLD: 128`, `BRIGHTNESS/CONTRAST: 200`
+- **Temporal smoothing**: `SMOOTHING_ALPHA: 0.7`
+- **크로마키 임계값**: `g > 110 && r < 100 && b < 100`
+- **Canvas FPS 제한**: 60fps (MP4 디코딩 병목 해결)
 
 ---
 
